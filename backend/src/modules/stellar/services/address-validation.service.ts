@@ -81,6 +81,10 @@ export class AddressValidationService {
     };
   }
 
+  async clearCache(): Promise<void> {
+    await (this.cache as any).reset();
+  }
+
   async validateAndCheckExists(address: string, network: StellarNetwork = StellarNetwork.PUBLIC): Promise<AddressValidationResult> {
     const options: AddressValidationOptions = {
       network,
