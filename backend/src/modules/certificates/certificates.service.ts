@@ -8,7 +8,10 @@ import { Verification } from './entities/verification.entity';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { CertificateStatsDto, StatsQueryDto } from './dto/stats.dto';
+import { SearchCertificateDto } from './dto/search-certificate.dto';
 import { StellarService } from '../stellar/services/stellar.service';
+import { PaginationService } from '../../common/services/pagination.service';
+import { PaginatedResult } from '../../common/interfaces/pagination.interface';
 
 @Injectable()
 export class CertificatesService {
@@ -23,6 +26,7 @@ export class CertificatesService {
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly stellarService: StellarService,
+    private readonly paginationService: PaginationService,
   ) { }
 
   async getStatistics(query: StatsQueryDto): Promise<CertificateStatsDto> {
@@ -171,8 +175,62 @@ export class CertificatesService {
     return await this.certificateRepo.save(certificate);
   }
 
-  async findAll() {
-    return await this.certificateRepo.find({ order: { issuedAt: 'DESC' } });
+  /**
+   * Find all certificates with pagination, sorting, and filtering
+   */
+  async findAll(searchDto: SearchCertificateDto): Promise<PaginatedResult<Certificate>> {
+    const queryBuilder = this.certificateRepo.createQueryBuilder('cert');
+
+    // Apply status filter
+    if (searchDto.status) {
+      switch (searchDto.status) {
+        case 'active':
+          queryBuilder.andWhere('cert.isRevoked = :isRevoked', { isRevoked: false });
+          queryBuilder.andWhere('cert.expiresAt > :now', { now: new Date() });
+          break;
+        case 'revoked':
+          queryBuilder.andWhere('cert.isRevoked = :isRevoked', { isRevoked: true });
+          break;
+        case 'expired':
+          queryBuilder.andWhere('cert.expiresAt <= :now', { now: new Date() });
+          break;
+      }
+    }
+
+    // Apply issuer filter
+    if (searchDto.issuer) {
+      queryBuilder.andWhere('cert.issuer ILIKE :issuer', {
+        issuer: `%${searchDto.issuer}%`
+      });
+    }
+
+    // Apply recipient filter
+    if (searchDto.recipient) {
+      queryBuilder.andWhere('cert.recipientName ILIKE :recipient', {
+        recipient: `%${searchDto.recipient}%`
+      });
+    }
+
+    // Apply date range filters
+    if (searchDto.issuedAfter) {
+      queryBuilder.andWhere('cert.issuedAt >= :issuedAfter', {
+        issuedAfter: new Date(searchDto.issuedAfter)
+      });
+    }
+
+    if (searchDto.issuedBefore) {
+      queryBuilder.andWhere('cert.issuedAt <= :issuedBefore', {
+        issuedBefore: new Date(searchDto.issuedBefore)
+      });
+    }
+
+    // Use pagination service
+    return await this.paginationService.paginate(queryBuilder, {
+      page: searchDto.page ?? 1,
+      limit: searchDto.limit ?? 10,
+      sortBy: searchDto.sortBy || 'issuedAt',
+      sortOrder: searchDto.sortOrder || 'DESC',
+    });
   }
 
   async findOne(id: string) {

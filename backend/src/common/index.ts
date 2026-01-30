@@ -25,9 +25,13 @@ export * from './utils';
 export { LoggingService } from './logging/logging.service';
 export { MetricsService } from './monitoring/metrics.service';
 export { SentryService } from './monitoring/sentry.service';
+export { PaginationService } from './services/pagination.service';
 
 // Pipes
 export { ValidationPipe } from './pipes/validation.pipe';
 
 // DTOs
 export * from './dto';
+
+// Interfaces
+export * from './interfaces/pagination.interface';

@@ -5,6 +5,7 @@ import { CorrelationIdMiddleware } from './logging/correlation-id.middleware';
 import { MetricsService } from './monitoring/metrics.service';
 import { SentryService } from './monitoring/sentry.service';
 import { MetricsMiddleware } from './monitoring/metrics.middleware';
+import { PaginationService } from './services/pagination.service';
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -27,6 +28,7 @@ import { ValidationUtils, CryptoUtils, TransformUtils, StringUtils } from './uti
     LoggingService,
     MetricsService,
     SentryService,
+    PaginationService,
 
     // Global Guards
     {
@@ -86,6 +88,7 @@ import { ValidationUtils, CryptoUtils, TransformUtils, StringUtils } from './uti
     LoggingService,
     MetricsService,
     SentryService,
+    PaginationService,
     JwtModule,
   ],
 })

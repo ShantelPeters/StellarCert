@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { CertificatesService } from './certificates.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { StatsQueryDto, CertificateStatsDto } from './dto/stats.dto';
+import { SearchCertificateDto } from './dto/search-certificate.dto';
 import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('certificates')
@@ -33,9 +34,10 @@ export class CertificatesController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'Get all certificates' })
-    async findAll() {
-        return await this.certificatesService.findAll();
+    @ApiOperation({ summary: 'Get all certificates with pagination and filtering' })
+    @ApiResponse({ status: 200, description: 'Returns paginated certificates' })
+    async findAll(@Query() searchDto: SearchCertificateDto) {
+        return await this.certificatesService.findAll(searchDto);
     }
 
     @Get(':id')

@@ -1,22 +1,19 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+// Base DTO
+export * from './base.dto';
 
-export class BaseDto {
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-}
+// Pagination DTOs
+export * from './pagination.dto';
 
-export class PaginationDto {
-  page: number = 1;
-  limit: number = 20;
-  skip: number = 0;
-  total: number;
-  totalPages: number;
-}
-
+// Response DTOs
 export class ListResponseDto<T> {
   data: T[];
-  pagination: PaginationDto;
+  pagination: {
+    page: number;
+    limit: number;
+    skip: number;
+    total: number;
+    totalPages: number;
+  };
   timestamp: string;
   path: string;
   message: string;
